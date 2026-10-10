@@ -1,25 +1,50 @@
 name: Build
+
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
-      - uses: gradle/actions/setup-gradle@v4
-      - name: Wrapper
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Localizar proyecto
+        run: |
+          echo "=== Contenido del repositorio ==="
+          find . -maxdepth 4 -not -path './.git/*' | sort
+          SETTINGS=$(find . -name settings.gradle -not -path '*/build/*' | head -1)
+          if [ -z "$SETTINGS" ]; then
+            echo "::error::No se encontro settings.gradle. Debe estar en la raiz del repo."
+            exit 1
+          fi
+          ROOT=$(dirname "$SETTINGS")
+          echo "PROJECT_ROOT=$ROOT" >> "$GITHUB_ENV"
+          echo "Proyecto Gradle detectado en: $ROOT"
+
+      - name: Generar wrapper
+        working-directory: ${{ env.PROJECT_ROOT }}
         run: gradle wrapper --gradle-version 8.12
-      - name: Build
+
+      - name: Compilar
+        working-directory: ${{ env.PROJECT_ROOT }}
         run: ./gradlew build --stacktrace
-      - uses: actions/upload-artifact@v4
+
+      - name: Subir jar
+        uses: actions/upload-artifact@v4
         with:
           name: light-client
-          path: build/libs/*.jar
+          path: ${{ env.PROJECT_ROOT }}/build/libs/*.jar
