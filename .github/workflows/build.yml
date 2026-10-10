@@ -21,6 +21,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14'
 
       - name: Localizar proyecto
         run: |
@@ -37,7 +39,7 @@ jobs:
 
       - name: Generar wrapper
         working-directory: ${{ env.PROJECT_ROOT }}
-        run: gradle wrapper --gradle-version 8.12
+        run: gradle wrapper --gradle-version 8.14
 
       - name: Compilar
         working-directory: ${{ env.PROJECT_ROOT }}
