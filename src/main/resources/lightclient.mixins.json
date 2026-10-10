@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.lightclient.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "AbstractBlockStateMixin",
+    "BlockModelRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
